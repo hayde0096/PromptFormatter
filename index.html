@@ -5,682 +5,942 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI 提示词格式化工具</title>
     <style>
+        :root {
+            --bg-page: #F6F7F9;
+            --bg-glow-1: rgba(99, 102, 241, 0.08);
+            --bg-glow-2: rgba(139, 92, 246, 0.06);
+            --bg-surface: #FFFFFF;
+            --bg-subtle: #F3F4F6;
+            --bg-hover: #EBEDF2;
+            --bg-input: #FBFCFE;
+            --border: #E5E7EB;
+            --border-strong: #D1D5DB;
+            --text-primary: #111827;
+            --text-secondary: #4B5563;
+            --text-muted: #9CA3AF;
+            --accent: #5E6AD2;
+            --accent-hover: #4F5BC4;
+            --accent-soft: rgba(94, 106, 210, 0.10);
+            --accent-border: rgba(94, 106, 210, 0.28);
+            --accent-ring: rgba(94, 106, 210, 0.20);
+            --nai-dot: #8B5CF6;
+            --sd-dot: #0EA5E9;
+            --danger: #DC2626;
+            --danger-soft: rgba(220, 38, 38, 0.08);
+            --danger-border: rgba(220, 38, 38, 0.22);
+            --toast-bg: #18181B;
+            --toast-text: #FAFAFA;
+            --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
+            --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px -12px rgba(15, 23, 42, 0.08);
+            --shadow-btn: 0 1px 2px rgba(94, 106, 210, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+            --counter-bg: rgba(251, 252, 254, 0.88);
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+        }
+
+        body.dark-mode {
+            --bg-page: #0B0C0F;
+            --bg-glow-1: rgba(99, 102, 241, 0.13);
+            --bg-glow-2: rgba(139, 92, 246, 0.08);
+            --bg-surface: #13151A;
+            --bg-subtle: #1B1E26;
+            --bg-hover: #232732;
+            --bg-input: #0F1116;
+            --border: #232731;
+            --border-strong: #323746;
+            --text-primary: #F3F4F6;
+            --text-secondary: #9CA3AF;
+            --text-muted: #6B7280;
+            --accent: #6E7BF2;
+            --accent-hover: #5E6AD2;
+            --accent-soft: rgba(110, 123, 242, 0.14);
+            --accent-border: rgba(110, 123, 242, 0.34);
+            --accent-ring: rgba(110, 123, 242, 0.26);
+            --nai-dot: #A78BFA;
+            --sd-dot: #38BDF8;
+            --danger: #F87171;
+            --danger-soft: rgba(248, 113, 113, 0.12);
+            --danger-border: rgba(248, 113, 113, 0.28);
+            --toast-bg: #F4F4F5;
+            --toast-text: #18181B;
+            --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+            --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.35), 0 14px 32px -14px rgba(0, 0, 0, 0.65);
+            --shadow-btn: 0 1px 3px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+            --counter-bg: rgba(15, 17, 22, 0.88);
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
-            background: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            background-color: var(--bg-page);
+            background-image:
+                radial-gradient(60% 40% at 15% 0%, var(--bg-glow-1), transparent 70%),
+                radial-gradient(50% 35% at 85% 0%, var(--bg-glow-2), transparent 70%);
+            background-attachment: fixed;
+            color: var(--text-primary);
             min-height: 100vh;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .app-shell {
+            max-width: 1240px;
+            margin: 0 auto;
+            padding: 28px 24px 44px;
             display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            transition: background-color 0.3s;
+            flex-direction: column;
+            gap: 18px;
         }
-        
-        body.dark-mode {
-            background: #1a1a1a;
-        }
-        
-        .container {
-            background: transparent;
-            border-radius: 0;
-            box-shadow: none;
-            width: 100%;
-            max-width: 100%;
-            padding: 30px;
-            position: relative;
-        }
-        
-        .theme-toggle {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            font-size: 24px;
-            cursor: pointer;
+
+        /* Header */
+        .topbar {
             display: flex;
             align-items: center;
-            justify-content: center;
-            transition: all 0.3s;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            z-index: 999;
-        }
-        
-        .theme-toggle:hover {
-            transform: scale(1.1);
-            box-shadow: 0 6px 16px rgba(0,0,0,0.2);
-        }
-        
-        body.dark-mode .theme-toggle {
-            background: #ffd700;
-        }
-        
-        .lang-toggle {
-            position: fixed;
-            top: 20px;
-            right: 80px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            z-index: 999;
-        }
-        
-        .lang-toggle:hover {
-            transform: scale(1.1);
-            box-shadow: 0 6px 16px rgba(0,0,0,0.2);
-        }
-        
-        body.dark-mode .lang-toggle {
-            background: #ffd700;
-        }
-        
-        h1 {
-            font-size: 32px;
-            color: #1A1A1A;
-            margin-bottom: 10px;
-            font-weight: 700;
-        }
-        
-        body.dark-mode h1 {
-            color: #ffffff;
-        }
-        
-        .subtitle {
-            font-size: 12px;
-            color: #999;
-            margin-bottom: 25px;
-        }
-        
-        body.dark-mode .subtitle {
-            color: #aaa;
-        }
-        
-        .options-box {
-            background: #FAFAFA;
-            border: 1px solid #E0E0E0;
-            border-radius: 8px;
-            padding: 18px;
-            margin-bottom: 20px;
-            display: flex;
             justify-content: space-between;
-            align-items: flex-start;
-            gap: 20px;
+            gap: 16px;
+            flex-wrap: wrap;
         }
-        
-        body.dark-mode .options-box {
-            background: #2a2a2a;
-            border-color: #444;
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
-        
-        .options-content {
-            flex: 1;
+
+        .brand-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #5E6AD2 0%, #8B5CF6 100%);
+            color: #FFFFFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(94, 106, 210, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+            flex-shrink: 0;
         }
-        
-        .options-box h3 {
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 12px;
-            color: #333;
+
+        .brand-text h1 {
+            font-size: 18px;
+            font-weight: 650;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+            line-height: 1.25;
         }
-        
-        body.dark-mode .options-box h3 {
-            color: #e0e0e0;
+
+        .brand-text .subtitle {
+            font-size: 12.5px;
+            color: var(--text-secondary);
+            margin-top: 2px;
         }
-        
-        .checkbox-group {
+
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .icon-pill {
+            height: 34px;
+            padding: 0 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg-surface);
+            color: var(--text-secondary);
+            font-size: 12.5px;
+            font-weight: 550;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            box-shadow: var(--shadow-xs);
+            transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
+        }
+
+        .icon-pill:hover {
+            background: var(--bg-hover);
+            border-color: var(--border-strong);
+            color: var(--text-primary);
+        }
+
+        .icon-pill:active {
+            transform: translateY(1px);
+        }
+
+        .icon-pill.icon-only {
+            width: 34px;
+            padding: 0;
+        }
+
+        /* Options Bar */
+        .options-bar {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 14px 18px;
+            box-shadow: var(--shadow-card);
             display: flex;
             flex-direction: column;
             gap: 10px;
         }
-        
-        .options-buttons {
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 10px 16px;
+        }
+
+        .switch-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 8px 12px;
+            border-radius: var(--radius-md);
+            background: var(--bg-subtle);
+            border: 1px solid transparent;
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.15s ease, border-color 0.15s ease;
+        }
+
+        .switch-item:hover {
+            background: var(--bg-hover);
+            border-color: var(--border);
+        }
+
+        .switch-label {
+            font-size: 12.5px;
+            font-weight: 500;
+            color: var(--text-primary);
+            line-height: 1.3;
+        }
+
+        .switch-control {
+            position: relative;
+            width: 34px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        .switch-control input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+            margin: 0;
+            z-index: 2;
+        }
+
+        .switch-track {
+            position: absolute;
+            inset: 0;
+            border-radius: 999px;
+            background: var(--border-strong);
+            transition: background-color 0.18s ease;
+        }
+
+        .switch-track::after {
+            content: "";
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #FFFFFF;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.22);
+            transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .switch-control input:checked + .switch-track {
+            background: var(--accent);
+        }
+
+        .switch-control input:checked + .switch-track::after {
+            transform: translateX(14px);
+        }
+
+        .switch-control input:focus-visible + .switch-track {
+            box-shadow: 0 0 0 3px var(--accent-ring);
+        }
+
+        /* Main Workspace Grid */
+        .workspace {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+            gap: 16px;
+            align-items: stretch;
+        }
+
+        .editor-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-card);
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            align-items: flex-start;
-            white-space: nowrap;
+            overflow: hidden;
+            transition: border-color 0.15s ease;
         }
-        
-        .checkbox-item {
+
+        .editor-card:focus-within {
+            border-color: var(--accent-border);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-surface);
+        }
+
+        .card-title {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .status-dot.nai {
+            background: var(--nai-dot);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.16);
+        }
+
+        .status-dot.sd {
+            background: var(--sd-dot);
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.16);
+        }
+
+        .card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            flex-wrap: wrap;
+            padding: 10px 14px;
+            border-top: 1px solid var(--border);
+            background: var(--bg-subtle);
+        }
+
+        .card-footer-actions {
             display: flex;
             align-items: center;
             gap: 8px;
-            font-size: 13px;
         }
-        
-        .checkbox-item input {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-            accent-color: #667eea;
-        }
-        
-        .checkbox-item label {
-            cursor: pointer;
-            user-select: none;
-            color: #333;
-        }
-        
-        body.dark-mode .checkbox-item label {
-            color: #e0e0e0;
-        }
-        
-        .note {
-            font-size: 12px;
-            color: #999;
-            margin-top: 8px;
-            margin-left: 26px;
-        }
-        
-        body.dark-mode .note {
-            color: #999;
-        }
-        
-        .button-row {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-            margin-bottom: 25px;
-            flex-wrap: wrap;
-        }
-        
-        .btn {
-            border: none;
-            border-radius: 6px;
-            padding: 10px 18px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            min-width: 120px;
-            height: 38px;
-        }
-        
-        .options-buttons .btn {
-            min-width: auto;
+
+        .btn-card {
             height: 32px;
-            padding: 6px 12px;
-            font-size: 12px;
+            padding: 0 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-strong);
+            background: var(--bg-surface);
+            color: var(--text-primary);
+            font-size: 12.5px;
+            font-weight: 550;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            white-space: nowrap;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.65);
+            transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
         }
-        
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+
+        body.dark-mode .btn-card {
+            background: #1D202A;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.07);
         }
-        
-        .btn:active {
-            transform: translateY(0);
+
+        .btn-card:hover {
+            background: var(--bg-hover);
+            border-color: var(--accent-border);
+            color: var(--accent);
         }
-        
-        .btn-purple {
-            background: #9C27B0;
-            color: white;
+
+        body.dark-mode .btn-card:hover {
+            background: #262A36;
         }
-        
-        .btn-orange {
-            background: #FF5722;
-            color: white;
+
+        .btn-card:active {
+            transform: translateY(1px);
+            box-shadow: none;
         }
-        
-        .label {
-            font-size: 14px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 10px;
-            margin-top: 20px;
+
+        .btn-card.danger {
+            color: var(--danger);
+            background: var(--danger-soft);
+            border-color: var(--danger-border);
+            box-shadow: none;
         }
-        
-        body.dark-mode .label {
-            color: #e0e0e0;
+
+        .btn-card.danger:hover {
+            background: var(--danger);
+            border-color: var(--danger);
+            color: #FFFFFF;
         }
-        
-        .label:first-child {
-            margin-top: 0;
+
+        .textarea-wrap {
+            position: relative;
+            flex: 1;
+            display: flex;
+            background: var(--bg-input);
         }
-        
+
         textarea {
             width: 100%;
-            height: 120px;
-            padding: 14px;
-            border: 1px solid #DDD;
-            border-radius: 6px;
-            font-family: 'Courier New', 'Monaco', monospace;
-            font-size: 12px;
+            min-height: 300px;
+            padding: 14px 16px 34px 16px;
+            border: none;
+            background: transparent;
+            color: var(--text-primary);
+            font-family: "JetBrains Mono", "Cascadia Code", "Fira Code", "SFMono-Regular", Consolas, monospace;
+            font-size: 13px;
+            line-height: 1.65;
             resize: vertical;
-            margin-bottom: 18px;
-            background: white;
-            color: #333;
-            transition: border-color 0.2s;
-        }
-        
-        body.dark-mode textarea {
-            background: #2a2a2a;
-            border-color: #444;
-            color: #e0e0e0;
-        }
-        
-        textarea:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
-        
-        .convert-btn-container {
+
+        textarea::placeholder {
+            color: var(--text-muted);
+        }
+
+        .char-counter {
+            position: absolute;
+            right: 16px;
+            bottom: 9px;
+            padding: 2px 7px;
+            border-radius: 5px;
+            background: var(--counter-bg);
+            color: var(--text-muted);
+            font-size: 11px;
+            font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+            font-variant-numeric: tabular-nums;
+            pointer-events: none;
+            user-select: none;
+            backdrop-filter: blur(4px);
+        }
+
+        /* Center Convert Controls */
+        .convert-column {
             display: flex;
+            flex-direction: column;
             justify-content: center;
-            margin-bottom: 18px;
+            gap: 10px;
+            padding: 4px 0;
         }
-        
-        .btn-convert {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 12px 35px;
-            font-size: 14px;
-            font-weight: 600;
-            border-radius: 6px;
-            cursor: pointer;
-            width: 140px;
-            height: 42px;
-            transition: all 0.2s;
-        }
-        
-        .btn-convert:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
-        }
-        
-        .btn-convert:active {
-            transform: translateY(0);
-        }
-        
-        .bottom-buttons {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        
-        .btn-copy {
-            background: #2196F3;
-            color: white;
-            padding: 10px 18px;
+
+        .btn-direction {
+            height: 40px;
+            padding: 0 16px;
+            border-radius: var(--radius-md);
             font-size: 13px;
             font-weight: 600;
-            border-radius: 6px;
-            border: none;
             cursor: pointer;
-            height: 40px;
-            min-width: 150px;
-            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            white-space: nowrap;
+            transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
         }
-        
-        .btn-clear {
-            background: #FF9800;
-            color: white;
-            padding: 10px 18px;
-            font-size: 13px;
-            font-weight: 600;
-            border-radius: 6px;
-            border: none;
-            cursor: pointer;
-            min-width: 130px;
-            height: 40px;
-            transition: all 0.2s;
+
+        .btn-direction:active {
+            transform: translateY(1px);
         }
-        
-        .btn-copy:hover, .btn-clear:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+
+        .btn-direction.primary {
+            background: var(--accent);
+            color: #FFFFFF;
+            border: 1px solid transparent;
+            box-shadow: var(--shadow-btn);
         }
-        
-        .btn-copy:active, .btn-clear:active {
-            transform: translateY(0);
+
+        .btn-direction.primary:hover {
+            background: var(--accent-hover);
         }
-        
-        .status-message {
+
+        .btn-direction.secondary {
+            background: var(--bg-surface);
+            color: var(--text-primary);
+            border: 1px solid var(--border-strong);
+            box-shadow: var(--shadow-xs);
+        }
+
+        .btn-direction.secondary:hover {
+            background: var(--bg-hover);
+            border-color: var(--accent-border);
+            color: var(--accent);
+        }
+
+        .arrow-desktop {
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .arrow-mobile {
+            display: none;
+            align-items: center;
+        }
+
+        /* Toast */
+        .toast {
             position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 12px 20px;
-            background: #4CAF50;
-            color: white;
-            border-radius: 6px;
-            font-size: 13px;
+            left: 50%;
+            bottom: 24px;
+            transform: translateX(-50%) translateY(12px);
+            padding: 9px 16px;
+            border-radius: 999px;
+            background: var(--toast-bg);
+            color: var(--toast-text);
+            font-size: 12.5px;
+            font-weight: 500;
+            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
             opacity: 0;
-            transition: opacity 0.3s;
             pointer-events: none;
             z-index: 1000;
+            transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+            white-space: nowrap;
+            max-width: calc(100vw - 32px);
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
-        
-        .status-message.show {
+
+        .toast.show {
             opacity: 1;
+            transform: translateX(-50%) translateY(0);
         }
-        
-        .status-message.success {
-            background: #4CAF50;
-        }
-        
-        .status-message.info {
-            background: #2196F3;
-        }
-        
-        @media (max-width: 600px) {
-            .container {
-                padding: 20px;
+
+        /* Responsive */
+        @media (max-width: 1040px) {
+            .options-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
             }
-            
-            h1 {
-                font-size: 24px;
+        }
+
+        @media (max-width: 860px) {
+            .app-shell {
+                padding: 18px 14px 32px;
+                gap: 14px;
             }
-            
+
+            .workspace {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .convert-column {
+                flex-direction: row;
+                padding: 0;
+            }
+
+            .btn-direction {
+                flex: 1;
+            }
+
+            .arrow-desktop {
+                display: none;
+            }
+
+            .arrow-mobile {
+                display: inline-flex;
+            }
+
             textarea {
-                height: 100px;
-                font-size: 11px;
+                min-height: 175px;
+                font-size: 12.5px;
             }
-            
-            .options-box {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            
-            .options-buttons {
-                flex-wrap: wrap;
-                justify-content: flex-start;
-            }
-            
-            .button-row {
-                gap: 8px;
-            }
-            
-            .btn {
-                font-size: 12px;
-                min-width: 100px;
-                height: 34px;
-                padding: 8px 14px;
-            }
-            
-            .options-buttons .btn {
-                min-width: auto;
-            }
-            
-            .bottom-buttons {
-                gap: 8px;
-            }
-            
-            .btn-copy, .btn-clear {
-                font-size: 12px;
-                min-width: auto;
-                height: 36px;
-                padding: 8px 12px;
+        }
+
+        @media (max-width: 560px) {
+            .options-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
-    <button class="lang-toggle" id="langToggle" title="Toggle Language / 切换语言">EN</button>
-    <button class="theme-toggle" id="themeToggle" title="切换黑夜/白天模式">🌙</button>
-    <div class="container">
-        <h1 data-lang-zh="🎨 AI 提示词格式化工具" data-lang-en="🎨 AI Prompt Formatter">🎨 AI 提示词格式化工具</h1>
-        <div class="subtitle" data-lang-zh="Novel AI ↔ Stable Diffusion 快速转换" data-lang-en="Novel AI ↔ Stable Diffusion Quick Conversion">Novel AI ↔ Stable Diffusion 快速转换</div>
-        
-        <div class="options-box">
-            <div class="options-content">
-                <h3 data-lang-zh="⚙️ 功能选项" data-lang-en="⚙️ Options">⚙️ 功能选项</h3>
-                <div class="checkbox-group">
-                    <div class="checkbox-item">
+    <div class="app-shell">
+        <header class="topbar">
+            <div class="brand">
+                <div class="brand-icon" aria-hidden="true">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 3l1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275L12 3z"/>
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <h1 data-lang-zh="AI 提示词格式化工具" data-lang-en="AI Prompt Formatter">AI 提示词格式化工具</h1>
+                    <div class="subtitle" data-lang-zh="Novel AI ↔ Stable Diffusion 提示词互转工作台" data-lang-en="Novel AI ↔ Stable Diffusion Prompt Workbench">Novel AI ↔ Stable Diffusion 提示词互转工作台</div>
+                </div>
+            </div>
+            <div class="topbar-actions">
+                <button class="icon-pill" id="langToggle" type="button" title="Toggle Language / 切换语言">EN</button>
+                <button class="icon-pill icon-only" id="themeToggle" type="button" title="切换主题" aria-label="Toggle Theme"></button>
+            </div>
+        </header>
+
+        <section class="options-bar" aria-label="Formatting Options">
+            <div class="options-grid">
+                <label class="switch-item" for="addSpace">
+                    <span class="switch-label" data-lang-zh="添加逗号后空格" data-lang-en="Space after comma">添加逗号后空格</span>
+                    <span class="switch-control">
                         <input type="checkbox" id="addSpace" checked>
-                        <label for="addSpace" data-lang-zh="添加逗号后空格" data-lang-en="Add Space After Comma">添加逗号后空格</label>
-                    </div>
-                    <div class="checkbox-item">
+                        <span class="switch-track"></span>
+                    </span>
+                </label>
+
+                <label class="switch-item" for="autoConvert">
+                    <span class="switch-label" data-lang-zh="实时自动转换" data-lang-en="Auto-convert on edit">实时自动转换</span>
+                    <span class="switch-control">
                         <input type="checkbox" id="autoConvert">
-                        <label for="autoConvert" data-lang-zh="自动检测并转换格式" data-lang-en="Auto-detect and Convert Format">自动检测并转换格式</label>
+                        <span class="switch-track"></span>
+                    </span>
+                </label>
+
+                <label class="switch-item" for="naiToSdNoUnderscore">
+                    <span class="switch-label" data-lang-zh="NAI → SD 自动去下划线" data-lang-en="NAI → SD: _ to space">NAI → SD 自动去下划线</span>
+                    <span class="switch-control">
+                        <input type="checkbox" id="naiToSdNoUnderscore" checked>
+                        <span class="switch-track"></span>
+                    </span>
+                </label>
+
+                <label class="switch-item" for="sdToNaiAddUnderscore">
+                    <span class="switch-label" data-lang-zh="SD → NAI 自动转下划线" data-lang-en="SD → NAI: space to _">SD → NAI 自动转下划线</span>
+                    <span class="switch-control">
+                        <input type="checkbox" id="sdToNaiAddUnderscore">
+                        <span class="switch-track"></span>
+                    </span>
+                </label>
+            </div>
+        </section>
+
+        <main class="workspace">
+            <!-- Left: Novel AI -->
+            <section class="editor-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <span class="status-dot nai"></span>
+                        <span data-lang-zh="Novel AI 格式" data-lang-en="Novel AI Format">Novel AI 格式</span>
                     </div>
                 </div>
-                <div class="note" data-lang-zh="※ 启用自动转换时，编辑任意框会实时转换到另一框，自动检测输入格式" data-lang-en="※ When auto-convert is enabled, editing either field converts to the other in real-time">※ 启用自动转换时，编辑任意框会实时转换到另一框，自动检测输入格式</div>
+                <div class="textarea-wrap">
+                    <textarea
+                        id="novelAI"
+                        spellcheck="false"
+                        placeholder="粘贴 Novel AI 格式提示词...&#10;例: 1.5::cover_bikini_girl_(gta_vi):: 或 {{{text}}} 或 [[[text]]]"
+                        data-placeholder-zh="粘贴 Novel AI 格式提示词...&#10;例: 1.5::cover_bikini_girl_(gta_vi):: 或 {{{text}}} 或 [[[text]]]"
+                        data-placeholder-en="Paste Novel AI format prompts...&#10;Example: 1.5::cover_bikini_girl_(gta_vi):: or {{{text}}} or [[[text]]]"
+                    ></textarea>
+                    <span class="char-counter" id="naiCharCount">0 字符</span>
+                </div>
+                <div class="card-footer">
+                    <button class="btn-card" id="toggleNaiUnderscore" type="button">
+                        <span data-lang-zh="下划线" data-lang-en="_">下划线</span>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></svg>
+                        <span data-lang-zh="空格" data-lang-en="Space">空格</span>
+                    </button>
+                    <div class="card-footer-actions">
+                        <button class="btn-card" id="copyNovelAI" type="button">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                            <span data-lang-zh="复制" data-lang-en="Copy">复制</span>
+                        </button>
+                        <button class="btn-card danger" id="clearNovelAI" type="button">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                            <span data-lang-zh="清空" data-lang-en="Clear">清空</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Center: Dual Convert Buttons -->
+            <div class="convert-column">
+                <button class="btn-direction primary" id="naiToSdBtn" type="button">
+                    <span>NAI</span>
+                    <span class="arrow-desktop" aria-hidden="true">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                    </span>
+                    <span class="arrow-mobile" aria-hidden="true">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>
+                    </span>
+                    <span>SD</span>
+                </button>
+
+                <button class="btn-direction secondary" id="sdToNaiBtn" type="button">
+                    <span>NAI</span>
+                    <span class="arrow-desktop" aria-hidden="true">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+                    </span>
+                    <span class="arrow-mobile" aria-hidden="true">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>
+                    </span>
+                    <span>SD</span>
+                </button>
             </div>
-            <div class="options-buttons">
-                <button class="btn btn-purple" id="underscoreBtn" data-lang-zh="下划线→空格" data-lang-en="Underscore → Space">下划线→空格</button>
-                <button class="btn btn-orange" id="spaceBtn" data-lang-zh="空格→下划线" data-lang-en="Space → Underscore">空格→下划线</button>
-            </div>
-        </div>
-        
-        <div class="label" data-lang-zh="📝 Novel AI 格式:" data-lang-en="📝 Novel AI Format:">📝 Novel AI 格式:</div>
-        <textarea id="novelAI" placeholder="粘贴 Novel AI 格式的提示词...&#10;例: 1.5::text:: 或 {{{text}}} 或 [[[text]]]" data-placeholder-zh="粘贴 Novel AI 格式的提示词...&#10;例: 1.5::text:: 或 {{{text}}} 或 [[[text]]]" data-placeholder-en="Paste Novel AI format prompts...&#10;Example: 1.5::text :: or {{{text}}} or [[[text]]]"></textarea>
-        
-        <div class="convert-btn-container">
-            <button class="btn-convert" id="convertBtn" data-lang-zh="⇅  转换  ⇅" data-lang-en="⇅  Convert  ⇅">⇅  转换  ⇅</button>
-        </div>
-        
-        <div class="label" data-lang-zh="🎯 Stable Diffusion 格式:" data-lang-en="🎯 Stable Diffusion Format:">🎯 Stable Diffusion 格式:</div>
-        <textarea id="stableDiffusion" placeholder="粘贴 Stable Diffusion 格式的提示词...&#10;例: (text:1.25) 或 (text,:1.25)" data-placeholder-zh="粘贴 Stable Diffusion 格式的提示词...&#10;例: (text:1.25) 或 (text,:1.25)" data-placeholder-en="Paste Stable Diffusion format prompts...&#10;Example: (text:1.25) or (text,:1.25)"></textarea>
-        
-        <div class="bottom-buttons">
-            <button class="btn-copy" id="copyNovelAI" data-lang-zh="📋 复制 Novel AI" data-lang-en="📋 Copy Novel AI">📋 复制 Novel AI</button>
-            <button class="btn-copy" id="copySD" data-lang-zh="📋 复制 Stable Diffusion" data-lang-en="📋 Copy Stable Diffusion">📋 复制 Stable Diffusion</button>
-            <button class="btn-clear" id="clearBtn" data-lang-zh="🗑️  清空全部" data-lang-en="🗑️  Clear All">🗑️  清空全部</button>
-        </div>
+
+            <!-- Right: Stable Diffusion -->
+            <section class="editor-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <span class="status-dot sd"></span>
+                        <span data-lang-zh="Stable Diffusion 格式" data-lang-en="Stable Diffusion Format">Stable Diffusion 格式</span>
+                    </div>
+                </div>
+                <div class="textarea-wrap">
+                    <textarea
+                        id="stableDiffusion"
+                        spellcheck="false"
+                        placeholder="粘贴 Stable Diffusion 格式提示词...&#10;例: (cover bikini girl (gta vi):1.25) 或 (text,:1.25)"
+                        data-placeholder-zh="粘贴 Stable Diffusion 格式提示词...&#10;例: (cover bikini girl (gta vi):1.25) 或 (text,:1.25)"
+                        data-placeholder-en="Paste Stable Diffusion format prompts...&#10;Example: (cover bikini girl (gta vi):1.25) or (text,:1.25)"
+                    ></textarea>
+                    <span class="char-counter" id="sdCharCount">0 字符</span>
+                </div>
+                <div class="card-footer">
+                    <button class="btn-card" id="toggleSdUnderscore" type="button">
+                        <span data-lang-zh="下划线" data-lang-en="_">下划线</span>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></svg>
+                        <span data-lang-zh="空格" data-lang-en="Space">空格</span>
+                    </button>
+                    <div class="card-footer-actions">
+                        <button class="btn-card" id="copySD" type="button">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                            <span data-lang-zh="复制" data-lang-en="Copy">复制</span>
+                        </button>
+                        <button class="btn-card danger" id="clearSD" type="button">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                            <span data-lang-zh="清空" data-lang-en="Clear">清空</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
     </div>
-    
-    <div class="status-message" id="statusMsg"></div>
+
+    <div class="toast" id="statusMsg" role="status" aria-live="polite"></div>
 
     <script>
         const novelAIBox = document.getElementById('novelAI');
         const sdBox = document.getElementById('stableDiffusion');
+        const naiCharCount = document.getElementById('naiCharCount');
+        const sdCharCount = document.getElementById('sdCharCount');
+
         const addSpaceCheckbox = document.getElementById('addSpace');
         const autoConvertCheckbox = document.getElementById('autoConvert');
-        const underscoreBtn = document.getElementById('underscoreBtn');
-        const spaceBtn = document.getElementById('spaceBtn');
-        const convertBtn = document.getElementById('convertBtn');
+        const naiToSdNoUnderscoreCheckbox = document.getElementById('naiToSdNoUnderscore');
+        const sdToNaiAddUnderscoreCheckbox = document.getElementById('sdToNaiAddUnderscore');
+
+        const toggleNaiUnderscoreBtn = document.getElementById('toggleNaiUnderscore');
+        const toggleSdUnderscoreBtn = document.getElementById('toggleSdUnderscore');
+        const naiToSdBtn = document.getElementById('naiToSdBtn');
+        const sdToNaiBtn = document.getElementById('sdToNaiBtn');
+
         const copyNovelAIBtn = document.getElementById('copyNovelAI');
         const copySDBtn = document.getElementById('copySD');
-        const clearBtn = document.getElementById('clearBtn');
+        const clearNovelAIBtn = document.getElementById('clearNovelAI');
+        const clearSDBtn = document.getElementById('clearSD');
         const statusMsg = document.getElementById('statusMsg');
         const themeToggle = document.getElementById('themeToggle');
         const langToggle = document.getElementById('langToggle');
 
+        const OPTIONS_STORAGE_KEY = 'pf_options_v2';
+        const DEFAULT_OPTIONS = {
+            addSpace: true,
+            autoConvert: false,
+            naiToSdNoUnderscore: true,
+            sdToNaiAddUnderscore: false
+        };
+
+        const SUN_ICON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>';
+        const MOON_ICON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>';
+
         let isUpdating = false;
+        let toastTimer = null;
         let currentLang = localStorage.getItem('language') || 'zh';
 
-        // 翻译字典
         const translations = {
-            'underscore_replaced': { zh: '已替换下划线为空格', en: 'Underscores replaced with spaces' },
-            'space_replaced': { zh: '已替换空格为下划线（保留逗号后空格）', en: 'Spaces replaced with underscores (preserved after commas)' },
+            'char_unit': { zh: '字符', en: 'chars' },
             'novelai_empty': { zh: 'Novel AI 框为空', en: 'Novel AI field is empty' },
-            'novelai_copied': { zh: '已复制 Novel AI 格式到剪贴板', en: 'Novel AI format copied to clipboard' },
+            'novelai_copied': { zh: '已复制 Novel AI 格式到剪贴板', en: 'Copied Novel AI prompt' },
             'sd_empty': { zh: 'Stable Diffusion 框为空', en: 'Stable Diffusion field is empty' },
-            'sd_copied': { zh: '已复制 Stable Diffusion 格式到剪贴板', en: 'Stable Diffusion format copied to clipboard' },
-            'cleared': { zh: '已清空全部', en: 'All cleared' }
+            'sd_copied': { zh: '已复制 Stable Diffusion 格式到剪贴板', en: 'Copied Stable Diffusion prompt' },
+            'converted_nai_to_sd': { zh: '已转换为 Stable Diffusion 格式', en: 'Converted to Stable Diffusion' },
+            'converted_sd_to_nai': { zh: '已转换为 Novel AI 格式', en: 'Converted to Novel AI' },
+            'nai_to_space': { zh: 'Novel AI 已统一为空格', en: 'Novel AI normalized to spaces' },
+            'nai_to_underscore': { zh: 'Novel AI 已统一为下划线', en: 'Novel AI normalized to underscores' },
+            'sd_to_space': { zh: 'Stable Diffusion 已统一为空格', en: 'Stable Diffusion normalized to spaces' },
+            'sd_to_underscore': { zh: 'Stable Diffusion 已统一为下划线', en: 'Stable Diffusion normalized to underscores' },
+            'toggle_unchanged': { zh: '内容无需替换', en: 'Nothing to toggle' },
+            'nai_cleared': { zh: '已清空 Novel AI', en: 'Cleared Novel AI' },
+            'sd_cleared': { zh: '已清空 Stable Diffusion', en: 'Cleared Stable Diffusion' },
+            'theme_title': { zh: '切换明暗模式', en: 'Toggle theme' }
         };
 
         function t(key) {
             return translations[key] ? translations[key][currentLang] : key;
         }
 
-        // 语言切换功能
-        function switchLanguage() {
-            currentLang = currentLang === 'zh' ? 'en' : 'zh';
-            localStorage.setItem('language', currentLang);
-            langToggle.textContent = currentLang === 'zh' ? 'EN' : '中';
-            updateLanguage();
+        // 选项持久化
+        function loadOptions() {
+            try {
+                const raw = localStorage.getItem(OPTIONS_STORAGE_KEY);
+                if (!raw) return { ...DEFAULT_OPTIONS };
+                const parsed = JSON.parse(raw);
+                return {
+                    addSpace: typeof parsed.addSpace === 'boolean' ? parsed.addSpace : DEFAULT_OPTIONS.addSpace,
+                    autoConvert: typeof parsed.autoConvert === 'boolean' ? parsed.autoConvert : DEFAULT_OPTIONS.autoConvert,
+                    naiToSdNoUnderscore: typeof parsed.naiToSdNoUnderscore === 'boolean' ? parsed.naiToSdNoUnderscore : DEFAULT_OPTIONS.naiToSdNoUnderscore,
+                    sdToNaiAddUnderscore: typeof parsed.sdToNaiAddUnderscore === 'boolean' ? parsed.sdToNaiAddUnderscore : DEFAULT_OPTIONS.sdToNaiAddUnderscore
+                };
+            } catch {
+                return { ...DEFAULT_OPTIONS };
+            }
         }
 
+        function getOptions() {
+            return {
+                addSpace: addSpaceCheckbox.checked,
+                autoConvert: autoConvertCheckbox.checked,
+                naiToSdNoUnderscore: naiToSdNoUnderscoreCheckbox.checked,
+                sdToNaiAddUnderscore: sdToNaiAddUnderscoreCheckbox.checked
+            };
+        }
+
+        function saveOptions() {
+            try {
+                localStorage.setItem(OPTIONS_STORAGE_KEY, JSON.stringify(getOptions()));
+            } catch {
+                // ignore storage quota / privacy mode errors
+            }
+        }
+
+        function initOptions() {
+            const opts = loadOptions();
+            addSpaceCheckbox.checked = opts.addSpace;
+            autoConvertCheckbox.checked = opts.autoConvert;
+            naiToSdNoUnderscoreCheckbox.checked = opts.naiToSdNoUnderscore;
+            sdToNaiAddUnderscoreCheckbox.checked = opts.sdToNaiAddUnderscore;
+
+            [addSpaceCheckbox, autoConvertCheckbox, naiToSdNoUnderscoreCheckbox, sdToNaiAddUnderscoreCheckbox].forEach(el => {
+                el.addEventListener('change', saveOptions);
+            });
+        }
+
+        // 字符统计
+        function updateCharCounts() {
+            const unit = t('char_unit');
+            naiCharCount.textContent = `${novelAIBox.value.length} ${unit}`;
+            sdCharCount.textContent = `${sdBox.value.length} ${unit}`;
+        }
+
+        // 语言切换
         function updateLanguage() {
+            document.documentElement.lang = currentLang === 'zh' ? 'zh-CN' : 'en';
+            document.title = currentLang === 'zh' ? 'AI 提示词格式化工具' : 'AI Prompt Formatter';
+            langToggle.textContent = currentLang === 'zh' ? 'EN' : '中';
+            themeToggle.title = t('theme_title');
+
             document.querySelectorAll('[data-lang-zh][data-lang-en]').forEach(element => {
                 const text = currentLang === 'zh' ? element.getAttribute('data-lang-zh') : element.getAttribute('data-lang-en');
-                if (element.tagName === 'TEXTAREA') {
-                    const placeholderKey = currentLang === 'zh' ? 'data-placeholder-zh' : 'data-placeholder-en';
-                    element.placeholder = element.getAttribute(placeholderKey);
-                } else {
-                    element.textContent = text;
-                }
+                element.textContent = text;
             });
-            // 更新所有 textarea 的占位符
+
             document.querySelectorAll('textarea[data-placeholder-zh][data-placeholder-en]').forEach(textarea => {
                 const placeholderKey = currentLang === 'zh' ? 'data-placeholder-zh' : 'data-placeholder-en';
                 textarea.placeholder = textarea.getAttribute(placeholderKey);
             });
+
+            updateCharCounts();
         }
 
-        langToggle.addEventListener('click', switchLanguage);
+        langToggle.addEventListener('click', () => {
+            currentLang = currentLang === 'zh' ? 'en' : 'zh';
+            localStorage.setItem('language', currentLang);
+            updateLanguage();
+        });
 
-        // 初始化语言
-        langToggle.textContent = currentLang === 'zh' ? 'EN' : '中';
-        updateLanguage();
+        // 主题切换
+        function applyTheme(isDark) {
+            document.body.classList.toggle('dark-mode', isDark);
+            themeToggle.innerHTML = isDark ? SUN_ICON : MOON_ICON;
+        }
 
-        // 主题切换功能
         function initTheme() {
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            if (savedTheme === 'dark') {
-                document.body.classList.add('dark-mode');
-                themeToggle.textContent = '☀️';
-            } else {
-                document.body.classList.remove('dark-mode');
-                themeToggle.textContent = '🌙';
-            }
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const isDark = savedTheme ? savedTheme === 'dark' : prefersDark;
+            applyTheme(isDark);
         }
 
         themeToggle.addEventListener('click', () => {
-            document.body.classList.toggle('dark-mode');
-            const isDarkMode = document.body.classList.contains('dark-mode');
-            localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
-            themeToggle.textContent = isDarkMode ? '☀️' : '🌙';
+            const nextDark = !document.body.classList.contains('dark-mode');
+            localStorage.setItem('theme', nextDark ? 'dark' : 'light');
+            applyTheme(nextDark);
         });
 
-        // 初始化主题
-        initTheme();
-
-        // 事件监听
-        novelAIBox.addEventListener('input', () => {
-            if (autoConvertCheckbox.checked && !isUpdating) {
-                isUpdating = true;
-                let text = novelAIBox.value;
-                text = replaceUnderscores(text);
-                if (addSpaceCheckbox.checked) text = addSpaceAfterComma(text);
-                sdBox.value = convertNovelAIToSD(text);
-                isUpdating = false;
-            }
-        });
-
-        sdBox.addEventListener('input', () => {
-            if (autoConvertCheckbox.checked && !isUpdating) {
-                isUpdating = true;
-                let text = sdBox.value;
-                text = replaceUnderscores(text);
-                if (addSpaceCheckbox.checked) text = addSpaceAfterComma(text);
-                novelAIBox.value = convertSDToNovelAI(text);
-                isUpdating = false;
-            }
-        });
-
-        convertBtn.addEventListener('click', () => {
-            isUpdating = true;
-            let novelAI = novelAIBox.value;
-            let sd = sdBox.value;
-
-            novelAI = replaceUnderscores(novelAI);
-            sd = replaceUnderscores(sd);
-
-            if (addSpaceCheckbox.checked) {
-                novelAI = addSpaceAfterComma(novelAI);
-                sd = addSpaceAfterComma(sd);
-            }
-
-            if (novelAI && !sd) {
-                sdBox.value = convertNovelAIToSD(novelAI);
-            } else if (!novelAI && sd) {
-                novelAIBox.value = convertSDToNovelAI(sd);
-            } else if (novelAI && sd) {
-                sdBox.value = convertNovelAIToSD(novelAI);
-                novelAIBox.value = convertSDToNovelAI(sd);
-            }
-            isUpdating = false;
-        });
-
-        underscoreBtn.addEventListener('click', () => {
-            novelAIBox.value = replaceUnderscores(novelAIBox.value);
-            sdBox.value = replaceUnderscores(sdBox.value);
-            showStatus(t('underscore_replaced'), 'success');
-        });
-
-        spaceBtn.addEventListener('click', () => {
-            novelAIBox.value = replaceSpaceWithUnderscore(novelAIBox.value);
-            sdBox.value = replaceSpaceWithUnderscore(sdBox.value);
-            showStatus(t('space_replaced'), 'success');
-        });
-
-        copyNovelAIBtn.addEventListener('click', () => {
-            if (!novelAIBox.value) {
-                showStatus(t('novelai_empty'), 'info');
-                return;
-            }
-            navigator.clipboard.writeText(novelAIBox.value).then(() => {
-                showStatus(t('novelai_copied'), 'success');
-            });
-        });
-
-        copySDBtn.addEventListener('click', () => {
-            if (!sdBox.value) {
-                showStatus(t('sd_empty'), 'info');
-                return;
-            }
-            navigator.clipboard.writeText(sdBox.value).then(() => {
-                showStatus(t('sd_copied'), 'success');
-            });
-        });
-
-        clearBtn.addEventListener('click', () => {
-            novelAIBox.value = '';
-            sdBox.value = '';
-            showStatus(t('cleared'), 'success');
-        });
-
-        // 转换函数
+        // 核心格式化与转换函数
         function addSpaceAfterComma(text) {
             text = text.replace(/, /g, ',');
             text = text.replace(/,/g, ', ');
             return text.trimEnd();
         }
 
+        function hasReplaceableUnderscore(text) {
+            return /(?<=[\p{L}\p{N})])_(?=[\p{L}\p{N}(]|\\\()/u.test(text);
+        }
+
         function replaceUnderscores(text) {
-            return text.replace(/(\w)_(\w)/g, '$1 $2');
+            return text.replace(/(?<=[\p{L}\p{N})])_(?=[\p{L}\p{N}(]|\\\()/gu, ' ');
         }
 
         function replaceSpaceWithUnderscore(text) {
             const parts = text.split(',');
             return parts.map((part, index) => {
-                const trimmed = part.trimStart();
-                const processed = trimmed.replace(/(\S)\s+(\S)/g, '$1_$2');
+                const trimmed = part.replace(/^[ \t]+/, '');
+                const processed = trimmed.replace(/(?<=\S)[ \t]+(?=\S)/g, '_');
                 return index > 0 ? ', ' + processed : processed;
             }).join('');
+        }
+
+        function toggleUnderscoreSpace(text) {
+            if (!text.trim()) {
+                return { text, mode: 'empty' };
+            }
+            if (hasReplaceableUnderscore(text)) {
+                const next = replaceUnderscores(text);
+                return { text: next, mode: next === text ? 'unchanged' : 'to_space' };
+            }
+            const next = replaceSpaceWithUnderscore(text);
+            return { text: next, mode: next === text ? 'unchanged' : 'to_underscore' };
         }
 
         function convertNovelAIToSD(input) {
             if (!input) return '';
             let result = input;
 
-            // 数字权重格式：1.5::text ::
+            // 数字权重格式：1.5::text::
             result = result.replace(/(-?\d+\.?\d*)::([^:]+)::/g, (match, weight, text) => {
                 const w = parseFloat(weight);
                 const converted = (w - 1.0) / 2.0 + 1.0;
@@ -710,8 +970,8 @@
             if (!input) return '';
             let result = input;
 
-            // ComfyUI格式 (text:1.25) 或 (text,:1.25)
-            result = result.replace(/\(([^:]+):,?(-?\d+\.?\d*)\)/g, (match, text, weight) => {
+            // ComfyUI格式 (text:1.25) 或 (text,:1.25)，支持单层嵌套括号与转义括号
+            result = result.replace(/\(((?:[^():\\]|\\.|(?:\([^()]*\)))+):,?(-?\d+\.?\d*)\)/g, (match, text, weight) => {
                 const w = parseFloat(weight);
                 const converted = (w - 1.0) * 2.0 + 1.0;
                 const weightStr = converted.toFixed(1).replace(/\.?0+$/, '');
@@ -721,13 +981,162 @@
             return result;
         }
 
-        function showStatus(message, type) {
-            statusMsg.textContent = message;
-            statusMsg.className = `status-message ${type} show`;
-            setTimeout(() => {
-                statusMsg.classList.remove('show');
-            }, 2500);
+        function formatAndConvertNaiToSd(text, opts) {
+            if (!text) return '';
+            let result = text;
+            if (opts.naiToSdNoUnderscore) result = replaceUnderscores(result);
+            if (opts.addSpace) result = addSpaceAfterComma(result);
+            return convertNovelAIToSD(result);
         }
+
+        function formatAndConvertSdToNai(text, opts) {
+            if (!text) return '';
+            let result = text;
+            if (opts.sdToNaiAddUnderscore) result = replaceSpaceWithUnderscore(result);
+            if (opts.addSpace) result = addSpaceAfterComma(result);
+            return convertSDToNovelAI(result);
+        }
+
+        // 事件监听
+        novelAIBox.addEventListener('input', () => {
+            if (autoConvertCheckbox.checked && !isUpdating) {
+                isUpdating = true;
+                sdBox.value = formatAndConvertNaiToSd(novelAIBox.value, getOptions());
+                isUpdating = false;
+            }
+            updateCharCounts();
+        });
+
+        sdBox.addEventListener('input', () => {
+            if (autoConvertCheckbox.checked && !isUpdating) {
+                isUpdating = true;
+                novelAIBox.value = formatAndConvertSdToNai(sdBox.value, getOptions());
+                isUpdating = false;
+            }
+            updateCharCounts();
+        });
+
+        naiToSdBtn.addEventListener('click', () => {
+            if (!novelAIBox.value.trim()) {
+                showStatus(t('novelai_empty'));
+                return;
+            }
+            isUpdating = true;
+            sdBox.value = formatAndConvertNaiToSd(novelAIBox.value, getOptions());
+            isUpdating = false;
+            updateCharCounts();
+            showStatus(t('converted_nai_to_sd'));
+        });
+
+        sdToNaiBtn.addEventListener('click', () => {
+            if (!sdBox.value.trim()) {
+                showStatus(t('sd_empty'));
+                return;
+            }
+            isUpdating = true;
+            novelAIBox.value = formatAndConvertSdToNai(sdBox.value, getOptions());
+            isUpdating = false;
+            updateCharCounts();
+            showStatus(t('converted_sd_to_nai'));
+        });
+
+        toggleNaiUnderscoreBtn.addEventListener('click', () => {
+            const res = toggleUnderscoreSpace(novelAIBox.value);
+            if (res.mode === 'empty') {
+                showStatus(t('novelai_empty'));
+                return;
+            }
+            if (res.mode === 'unchanged') {
+                showStatus(t('toggle_unchanged'));
+                return;
+            }
+            novelAIBox.value = res.text;
+            updateCharCounts();
+            showStatus(t(res.mode === 'to_space' ? 'nai_to_space' : 'nai_to_underscore'));
+        });
+
+        toggleSdUnderscoreBtn.addEventListener('click', () => {
+            const res = toggleUnderscoreSpace(sdBox.value);
+            if (res.mode === 'empty') {
+                showStatus(t('sd_empty'));
+                return;
+            }
+            if (res.mode === 'unchanged') {
+                showStatus(t('toggle_unchanged'));
+                return;
+            }
+            sdBox.value = res.text;
+            updateCharCounts();
+            showStatus(t(res.mode === 'to_space' ? 'sd_to_space' : 'sd_to_underscore'));
+        });
+
+        function copyText(text, emptyKey, copiedKey) {
+            if (!text) {
+                showStatus(t(emptyKey));
+                return;
+            }
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showStatus(t(copiedKey));
+                }).catch(() => fallbackCopy(text, copiedKey));
+            } else {
+                fallbackCopy(text, copiedKey);
+            }
+        }
+
+        function fallbackCopy(text, copiedKey) {
+            const temp = document.createElement('textarea');
+            temp.value = text;
+            temp.style.position = 'fixed';
+            temp.style.opacity = '0';
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand('copy');
+            document.body.removeChild(temp);
+            showStatus(t(copiedKey));
+        }
+
+        copyNovelAIBtn.addEventListener('click', () => {
+            copyText(novelAIBox.value, 'novelai_empty', 'novelai_copied');
+        });
+
+        copySDBtn.addEventListener('click', () => {
+            copyText(sdBox.value, 'sd_empty', 'sd_copied');
+        });
+
+        clearNovelAIBtn.addEventListener('click', () => {
+            if (!novelAIBox.value) {
+                showStatus(t('novelai_empty'));
+                return;
+            }
+            novelAIBox.value = '';
+            updateCharCounts();
+            showStatus(t('nai_cleared'));
+        });
+
+        clearSDBtn.addEventListener('click', () => {
+            if (!sdBox.value) {
+                showStatus(t('sd_empty'));
+                return;
+            }
+            sdBox.value = '';
+            updateCharCounts();
+            showStatus(t('sd_cleared'));
+        });
+
+        function showStatus(message) {
+            statusMsg.textContent = message;
+            statusMsg.classList.add('show');
+            if (toastTimer) clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                statusMsg.classList.remove('show');
+            }, 2200);
+        }
+
+        // 初始化
+        initOptions();
+        initTheme();
+        updateLanguage();
     </script>
 </body>
 </html>
